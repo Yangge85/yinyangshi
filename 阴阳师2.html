@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阴阳师 v1.3</title>
+    <style>
+        body {
+            max-width: 380px;
+        }
+
+        /* 定义整体布局容器 */
+        .anniu {
+            display: flex;
+            /* 使用弹性布局 */
+            flex-direction: column;
+            /* 在垂直方向上排列子元素 */
+            align-items: center;
+            /* 水平居中子元素 */
+            max-width: 380px;
+
+
+        }
+
+        /* 定义按钮样式 */
+        .button {
+            width: 300px;
+            height: 50px;
+            font-size: 16px;
+            text-align: center;
+            margin: 10px;
+            background-image: radial-gradient(1000px 30px at center center,
+                    rgba(0, 0, 0, 0.2) 30%,
+                    #ffffff64 70%);
+
+            /* 添加按钮之间的外边距 */
+        }
+
+        .anniu:hover .button {
+            background-image: radial-gradient(1000px 30px at center center,
+                    rgba(0, 0, 0, 0.2) 30%,
+                    #fffdfd 70%);
+
+        }
+
+        /* 定义按钮行的样式 */
+        .row {
+            display: flex;
+            /* 使用弹性布局 */
+            justify-content: space-evenly;
+            /* 在行内均匀分布按钮 */
+            width: 100%;
+            /* 设置行宽度为100% */
+        }
+
+        /* 定义标题1的样式 */
+        h1 {
+            text-align: center;
+            font-size: 20px;
+        }
+
+        /* 定义标题2的样式 */
+        h2 {
+            text-align: center;
+            font-size: 20px;
+        }
+
+        /* 设置页面背景颜色 */
+        body {
+            background-color: #bbb5ac;
+        }
+
+
+        .pic {
+
+            width: 100%;
+            display: flex;
+            /* height: 100; */
+            flex-wrap: wrap;
+            /* position: relative; */
+
+            /* justify-content: space-evenly; */
+            /* background-color: #ba750e; */
+            margin: 0 auto;
+
+
+        }
+
+        .card {
+            background: radial-gradient(circle, #eded1a, #f6b103ce);
+            display: inline-block;
+            width: 40%;
+            /* height: 100px; */
+            /* display: flex; */
+            flex-wrap: wrap;
+            margin: 1px auto;
+            border: 1px solid #000;
+
+        }
+
+        .pic .card img {
+
+            width: 100%;
+            /* height: 100%; */
+            /* position: absolute; */
+            /* justify-content: space-evenly; */
+
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <!-- 页面标题 -->
+        <h1>阴阳师 v1.3 </h1>
+        <p style="font-size: 6px; text-align: right;"> &copy; 2023 Yangge. All Rights Reserved.</p>
+        <div class="anniu">
+            <!-- 第一行按钮容器 -->
+            <div class="row">
+                <button class="button" id="drawButton">抽卡</button>
+                <button class="button" id="drawTenButton">10连抽</button>
+                <button class="button" id="resetButton">重置</button>
+            </div>
+            <!-- 第二行按钮容器 -->
+            <div class="row">
+                <button class="button" id="autoDrawButton">自动抽卡</button>
+                <button class="button" id="autoDrawTenButton">自动10连抽</button>
+                <button class="button" id="stopButton">停止</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<div class="pic">
+
+
+</div>
+
+
+<h2>抽卡结果：</h2>
+<p class="cishu">抽卡次数：0</p>
+<ul id="gongxi" style="display: inline-block;">
+</ul>
+<ul id="cardList">
+</ul>
+</div>
+
+<script>
+    // 初始抽卡次数为 0
+    let drawCount = 0;
+    let autoDrawInterval; // 用于自动抽卡的计时器
+
+    // 获取包含抽卡次数的 <p> 元素
+    const cishuElement = document.querySelector(".cishu");
+
+    // 更新抽卡次数显示
+    function updateDrawCount() {
+        cishuElement.textContent = `抽卡次数：${drawCount}`;
+    }
+
+    // 抽卡按钮
+    const drawButton = document.getElementById("drawButton");
+    // 10连抽按钮
+    const drawTenButton = document.getElementById("drawTenButton");
+    // 重置按钮
+    const resetButton = document.getElementById("resetButton");
+    // 自动抽卡按钮
+    const autoDrawButton = document.getElementById("autoDrawButton");
+    // 自动10连抽按钮
+    const autoDrawTenButton = document.getElementById("autoDrawTenButton");
+    // 停止按钮
+    const stopButton = document.getElementById("stopButton");
+    // 抽卡结果列表
+    const cardList = document.getElementById("cardList");
+    // "SP" 和 "SSR" 结果列表
+    const gongxiList = document.getElementById("gongxi");
+
+    const cardData = {
+        "SP": [
+            {
+                "name": "少羽大天狗",
+                "imageURL": "./sp/少羽大天狗.png"
+            },
+            {
+                "name": "炼狱茨木童子",
+                "imageURL": "./sp/炼狱茨木童子.png"
+            },
+            {
+                "name": "稻荷神御馔津",
+                "imageURL": "./sp/稻荷神御馔津.png"
+            },
+            {
+                "name": "苍风一目连",
+                "imageURL": "./sp/苍风一目连.png"
+            },
+            {
+                "name": "赤影妖刀姬",
+                "imageURL": "./sp/赤影妖刀姬.png"
+            },
+            {
+                "name": "御怨般若",
+                "imageURL": "./sp/御怨般若.png"
+            },
+            {
+                "name": "骁浪荒川之主",
+                "imageURL": "./sp/骁浪荒川之主.png"
+            },
+            {
+                "name": "烬天玉藻前",
+                "imageURL": "./sp/烬天玉藻前.png"
+            },
+            {
+                "name": "鬼王酒吞童子",
+                "imageURL": "./sp/鬼王酒吞童子.png"
+            },
+            {
+                "name": "天剑韧心鬼切",
+                "imageURL": "./sp/天剑韧心鬼切.png"
+            },
+            {
+                "name": "聆海金鱼姬",
+                "imageURL": "./sp/聆海金鱼姬.png"
+            },
+            {
+                "name": "浮世青行灯",
+                "imageURL": "./sp/浮世青行灯.png"
+            },
+            {
+                "name": "缚骨清姬",
+                "imageURL": "./sp/缚骨清姬.png"
+            },
+            {
+                "name": "待宵姑获鸟",
+                "imageURL": "./sp/待宵姑获鸟.png"
+            },
+            {
+                "name": "麓铭大岳丸",
+                "imageURL": "./sp/麓铭大岳丸.png"
+            },
+            {
+                "name": "初翎山风",
+                "imageURL": "./sp/初翎山风.png"
+            },
+            {
+                "name": "夜溟彼岸花",
+                "imageURL": "./sp/夜溟彼岸花.png"
+            },
+            {
+                "name": "蝉冰雪女",
+                "imageURL": "./sp/蝉冰雪女.png"
+            },
+            {
+                "name": "空相面灵气",
+                "imageURL": "./sp/空相面灵气.png"
+            },
+            {
+                "name": "绘世花鸟卷",
+                "imageURL": "./sp/绘世花鸟卷.png"
+            },
+            {
+                "name": "因幡辉夜姬",
+                "imageURL": "./sp/因幡辉夜姬.png"
+            },
+            {
+                "name": "梦寻山兔",
+                "imageURL": "./sp/梦寻山兔.png"
+            },
+            {
+                "name": "神堕八岐大蛇",
+                "imageURL": "./sp/神堕八岐大蛇.png"
+            },
+            {
+                "name": "大夜摩天阎魔",
+                "imageURL": "./sp/大夜摩天阎魔.png"
+            },
+            {
+                "name": "心狩鬼女红叶",
+                "imageURL": "./sp/心狩鬼女红叶.png"
+            },
+            {
+                "name": "神启荒",
+                "imageURL": "./sp/神启荒.png"
+            },
+            {
+                "name": "禅心云外镜",
+                "imageURL": "./sp/禅心云外镜.png"
+            },
+            {
+                "name": "流光追月神",
+                "imageURL": "./sp/流光追月神.png"
+            },
+            {
+                "name": "修罗鬼童丸",
+                "imageURL": "./sp/修罗鬼童丸.png"
+            },
+            {
+                "name": "寻森小鹿男",
+                "imageURL": "./sp/寻森小鹿男.png"
+            },
+            {
+                "name": "纺愿缘结神",
+                "imageURL": "./sp/纺愿缘结神.png"
+            },
+            {
+                "name": "渺念萤草",
+                "imageURL": "./sp/渺念萤草.png"
+            }
+
+        ],
+        "SSR": [
+            {
+                "name": "大天狗",
+                "imageURL": "./ssr/大天狗.png"
+            },
+            {
+                "name": "酒吞童子",
+                "imageURL": "./ssr/酒吞童子.png"
+            },
+            {
+                "name": "荒川之主",
+                "imageURL": "./ssr/荒川之主.png"
+            },
+            {
+                "name": "阎魔",
+                "imageURL": "./ssr/阎魔.png"
+            },
+            {
+                "name": "两面佛",
+                "imageURL": "./ssr/两面佛.png"
+            },
+            {
+                "name": "小鹿男",
+                "imageURL": "./ssr/小鹿男.png"
+            },
+            {
+                "name": "茨木童子",
+                "imageURL": "./ssr/茨木童子.png"
+            },
+            {
+                "name": "青行灯",
+                "imageURL": "./ssr/青行灯.png"
+            },
+            {
+                "name": "妖刀姬",
+                "imageURL": "./ssr/妖刀姬.png"
+            },
+            {
+                "name": "一目连",
+                "imageURL": "./ssr/一目连.png"
+            },
+            {
+                "name": "花鸟卷",
+                "imageURL": "./ssr/花鸟卷.png"
+            },
+            {
+                "name": "辉夜姬",
+                "imageURL": "./ssr/辉夜姬.png"
+            },
+            {
+                "name": "荒",
+                "imageURL": "./ssr/荒.png"
+            },
+            {
+                "name": "彼岸花",
+                "imageURL": "./ssr/彼岸花.png"
+            },
+            {
+                "name": "雪童子",
+                "imageURL": "./ssr/雪童子.png"
+            },
+            {
+                "name": "山风",
+                "imageURL": "./ssr/山风.png"
+            },
+            {
+                "name": "玉藻前",
+                "imageURL": "./ssr/玉藻前.png"
+            },
+            {
+                "name": "御馔津",
+                "imageURL": "./ssr/御馔津.png"
+            },
+            {
+                "name": "面灵气",
+                "imageURL": "./ssr/面灵气.png"
+            },
+            {
+                "name": "鬼切",
+                "imageURL": "./ssr/鬼切.png"
+            },
+            {
+                "name": "白藏主",
+                "imageURL": "./ssr/白藏主.png"
+            },
+            {
+                "name": "八岐大蛇",
+                "imageURL": "./ssr/八岐大蛇.png"
+            },
+            {
+                "name": "不知火",
+                "imageURL": "./ssr/不知火.png"
+            },
+            {
+                "name": "大岳丸",
+                "imageURL": "./ssr/大岳丸.png"
+            },
+            {
+                "name": "泷夜叉姬",
+                "imageURL": "./ssr/泷夜叉姬.png"
+            },
+            {
+                "name": "云外镜",
+                "imageURL": "./ssr/云外镜.png"
+            },
+            {
+                "name": "鬼童丸",
+                "imageURL": "./ssr/鬼童丸.png"
+            },
+            {
+                "name": "缘结神",
+                "imageURL": "./ssr/缘结神.png"
+            },
+            {
+                "name": "铃鹿御前",
+                "imageURL": "./ssr/铃鹿御前.png"
+            },
+            {
+                "name": "紧那罗",
+                "imageURL": "./ssr/紧那罗.png"
+            },
+            {
+                "name": "千姬",
+                "imageURL": "./ssr/千姬.png"
+            },
+            {
+                "name": "帝释天",
+                "imageURL": "./ssr/帝释天.png"
+            },
+            {
+                "name": "阿修罗",
+                "imageURL": "./ssr/阿修罗.png"
+            },
+            {
+                "name": "食灵",
+                "imageURL": "./ssr/食灵.png"
+            },
+            {
+                "name": "饭笥",
+                "imageURL": "./ssr/饭笥.png"
+            },
+            {
+                "name": "铃彦姬",
+                "imageURL": "./ssr/铃彦姬.png"
+            },
+            {
+                "name": "须佐之男",
+                "imageURL": "./ssr/须佐之男.png"
+            },
+            {
+                "name": "寻香行",
+                "imageURL": "./ssr/寻香行.png"
+            },
+            {
+                "name": "季",
+                "imageURL": "./ssr/季.png"
+            },
+            {
+                "name": "月读",
+                "imageURL": "./ssr/月读.png"
+            },
+            {
+                "name": "言灵",
+                "imageURL": "./ssr/言灵.png"
+            },
+            {
+                "name": "孔雀明王",
+                "imageURL": "./ssr/孔雀明王.png"
+            },
+            {
+                "name": "天照",
+                "imageURL": "./ssr/天照.png"
+            },
+            {
+                "name": "阎魔大王",
+                "imageURL": "./ssr/阎魔大王.png"
+            }
+
+        ],
+        "SR": [
+            "桃花妖", "雪女", "鬼使白", "鬼使黑", "孟婆", "犬神", "骨女", "鬼女红叶", "跳跳哥哥", "傀儡师",
+            "海坊主", "判官", "凤凰火", "吸血姬", "妖狐", "妖琴师", "食梦貘", "清姬", "镰鼬", "姑获鸟",
+            "二口女", "白狼", "樱花妖", "惠比寿", "络新妇", "般若", "青坊主", "万年竹", "夜叉", "黑童子",
+            "白童子", "烟烟罗", "金鱼姬", "鸩", "以津真天", "匣中少女", "小松丸", "书翁", "百目鬼", "追月神",
+            "日和坊", "薰", "弈", "猫掌柜", "人面树", "於菊虫", "一反木绵", "入殓师", "化鲸", "海忍",
+            "久次良", "蟹姬", "纸舞", "星熊童子", "风狸", "蝎女", "入内雀", "饴细工", "川猿", "迦楼罗",
+            "灵海蝶", "粉婆婆", "天逆每", "慧明灯"
+        ],
+
+        "R": [
+            "三尾狐", "座敷童子", "鲤鱼精", "九命猫", "狸猫", "河童", "童男",
+            "童女", "饿鬼", "巫蛊师", "鸦天狗", "食发鬼", "武士之灵", "雨女",
+            "跳跳弟弟", "跳跳妹妹", "兵俑", "丑时之女", "独眼小僧", "铁鼠",
+            "椒图", "管狐", "山兔", "萤草", "蝴蝶精", "山童", "首无", "觉",
+            "青蛙瓷器", "古笼火", "兔丸", "数珠", "小袖之手", "虫师", "天井下",
+            "垢尝", "影鳄"
+        ]
+    };
+
+    // 更新抽卡次数显示
+    updateDrawCount();
+
+    // 显示 "SP" 和 "SSR" 结果，包括颜色和格式
+    function showSPAndSSRResults() {
+        // 清空 "gongxi" 列表
+        gongxiList.innerHTML = "";
+
+        // 获取所有抽卡结果
+        const cardItems = cardList.getElementsByTagName("li");
+
+        // 遍历抽卡结果，筛选出 "SP" 和 "SSR" 结果并显示在 "gongxi" 列表中
+        for (let i = 0; i < cardItems.length; i++) {
+            const cardItem = cardItems[i];
+            const cardText = cardItem.textContent;
+
+            if (cardText.includes("SP") || cardText.includes("SSR")) {
+                // 获取抽卡结果元素的颜色
+                const cardColor = cardItem.style.color;
+
+                // 创建 "gongxi" 列表中的元素，并设置格式和颜色
+                const listItem = document.createElement("li");
+                listItem.style.color = cardColor;
+                listItem.textContent = `恭喜获得 ${cardText}`;
+
+                gongxiList.appendChild(listItem);
+            }
+        }
+    }
+
+    // 重置抽卡结果和抽卡次数
+    function resetCardList() {
+        cardList.innerHTML = "";
+        gongxiList.innerHTML = ""; // 重置 "SP" 和 "SSR" 结果列表
+        drawCount = 0; // 重置抽卡次数
+        updateDrawCount(); // 更新抽卡次数显示
+
+        // 清除展示卡片的div内容
+        const picDiv = document.querySelector(".pic");
+        if (picDiv) {
+            picDiv.innerHTML = ""; // 清空展示卡片的div内容
+            const newCardDiv = document.createElement("div");
+            newCardDiv.classList.add("card");
+            // picDiv.appendChild(newCardDiv); // 重新创建一个空的卡片div并添加到picDiv中
+        }
+    }
+
+
+    // 抽卡逻辑
+    function drawCard() {
+        // 增加抽卡次数
+        drawCount++;
+
+        // 更新抽卡次数显示
+        updateDrawCount();
+
+        // 生成随机值
+        const randomValue = Math.random();
+        let randomLevel = "";
+
+        if (randomValue < 0.0025) {
+            randomLevel = "SP";
+        } else if (randomValue < 0.0125) {
+            randomLevel = "SSR";
+        } else if (randomValue < 0.2125) {
+            randomLevel = "SR";
+        } else {
+            randomLevel = "R";
+        }
+
+        // 随机选择一张卡片
+        const cardPool = cardData[randomLevel];
+        const randomIndex = Math.floor(Math.random() * cardPool.length);
+        const drawnCard = cardPool[randomIndex];
+
+        // 创建抽卡结果元素
+        const listItem = document.createElement("li");
+
+        // 设置抽卡结果文本
+        let cardText = `获得 ${randomLevel} 卡：`;
+        // const cardDiv = null;  // 在if语句块外定义
+        if (randomLevel === "SP" || randomLevel === "SSR") {
+            // 创建展示卡片的 div
+            const cardDiv = document.createElement("div");
+            cardDiv.classList.add("card");
+
+            // 创建图像元素
+            const cardImage = document.createElement("img");
+            cardImage.src = drawnCard.imageURL;
+            cardDiv.appendChild(cardImage);
+
+            // 创建卡片名称元素
+            const cardName = document.createElement("p");
+            cardName.textContent = `${randomLevel} ${drawnCard.name}`; // 加上 "SP" 或 "SSR"
+            cardName.style.fontWeight = "bold";
+            cardName.style.textAlign = "center"; // 文字居中显示
+
+            // 将卡片名称元素添加到展示卡片的 div 中
+            cardDiv.appendChild(cardName);
+
+            // 将展示卡片添加到页面
+            document.querySelector(".pic").appendChild(cardDiv);
+
+            // 设置列表项的文字颜色
+            if (randomLevel === "SP") {
+                listItem.style.color = "red";
+                cardDiv.style.background = "radial-gradient(circle, #d9dd0c, #ff1900)";
+            } else {
+                listItem.style.color = "yellow";
+                cardDiv.style.background = "radial-gradient(circle, #eded1a, #f6b103ce)";
+            }
+        } else {
+            // 不是SP和SSR的卡片，只显示名字
+            listItem.textContent = `获得 ${randomLevel} 卡：${drawnCard}`;
+        }
+
+
+
+        listItem.textContent = cardText;
+
+        // // 根据抽卡结果的等级设置字体颜色
+        // if (randomLevel === "SP") {
+        //     // 创建展示卡片的div
+        //     const cardDiv = document.createElement("div");
+        //     cardDiv.classList.add("card");
+        //     const cardImage = document.createElement("img");
+        //     cardImage.src = drawnCard.imageURL;
+        //     cardDiv.appendChild(cardImage);
+        //     document.querySelector(".pic").appendChild(cardDiv);
+        //     listItem.style.color = "red";
+        //     cardDiv.style.background = "radial-gradient(circle, #d9dd0c, #ff1900) ";
+        // } if (randomLevel === "SSR") {
+        //     // 创建展示卡片的div
+        //     const cardDiv = document.createElement("div");
+        //     cardDiv.classList.add("card");
+        //     const cardImage = document.createElement("img");
+        //     cardImage.src = drawnCard.imageURL;
+        //     cardDiv.appendChild(cardImage);
+        //     document.querySelector(".pic").appendChild(cardDiv);
+        //     listItem.style.color = "yellow";
+        //     cardDiv.style.background = "radial-gradient(circle, #ff1900, #d9dd0c) ";
+        // }
+
+        // 将抽中的卡片添加到结果列表
+        cardList.appendChild(listItem);
+
+        // 显示 "SP" 和 "SSR" 结果
+        showSPAndSSRResults();
+    }
+
+
+    // 10连抽逻辑
+    function drawTenCards() {
+        for (let i = 0; i < 10; i++) {
+            drawCard();
+        }
+    }
+
+    // 自动抽卡逻辑
+    function autoDraw() {
+        stopAutoDraw(); // 停止之前的自动抽卡计时器
+        autoDrawInterval = setInterval(drawCard, 1000); // 每隔1秒自动抽卡
+    }
+
+    // 自动10连抽逻辑
+    function autoDrawTen() {
+        stopAutoDraw(); // 停止之前的自动抽卡计时器
+        autoDrawInterval = setInterval(drawTenCards, 1); // 每隔1秒自动进行10连抽
+    }
+
+    // 停止自动抽卡
+    function stopAutoDraw() {
+        clearInterval(autoDrawInterval);
+    }
+
+    // 绑定按钮事件
+    drawButton.addEventListener("click", drawCard);
+    drawTenButton.addEventListener("click", drawTenCards);
+    resetButton.addEventListener("click", resetCardList);
+    autoDrawButton.addEventListener("click", autoDraw);
+    autoDrawTenButton.addEventListener("click", autoDrawTen);
+    stopButton.addEventListener("click", stopAutoDraw);
+</script>
+</body>
+
+</html>
